@@ -1,11 +1,11 @@
 '''
-Reference implementation of node2vec. 
+Reference implementation of node2vec.
 
 Author: Aditya Grover
 
 For more details, refer to the paper:
 node2vec: Scalable Feature Learning for Networks
-Aditya Grover and Jure Leskovec 
+Aditya Grover and Jure Leskovec
 Knowledge Discovery and Data Mining (KDD), 2016
 '''
 
@@ -83,10 +83,13 @@ def learn_embeddings(walks):
 	'''
 	Learn embeddings by optimizing the Skipgram objective using SGD.
 	'''
-	walks = [map(str, walk) for walk in walks]
+	walks = [list(map(str, walk)) for walk in walks]
+
 	model = Word2Vec(walks, size=args.dimensions, window=args.window_size, min_count=0, sg=1, workers=args.workers, iter=args.iter)
-	model.save_word2vec_format(args.output)
-	
+	model.wv.save_word2vec_format(args.output)
+
+	print('Saved Embedding at', args.output)
+
 	return
 
 def main(args):
@@ -96,8 +99,14 @@ def main(args):
 	nx_G = read_graph()
 	G = node2vec.Graph(nx_G, args.directed, args.p, args.q)
 	G.preprocess_transition_probs()
+
+	print('[Starting Random Walks]')
 	walks = G.simulate_walks(args.num_walks, args.walk_length)
+	print()
+
+	print('[Starting Learning Embeddings]')
 	learn_embeddings(walks)
+	print()
 
 if __name__ == "__main__":
 	args = parse_args()
